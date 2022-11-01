@@ -30,10 +30,17 @@
         "landmark-grid-container"
       )[0];
       const grid = new LandmarkGrid(landmarkContainer);
+      const landmarks = {};
 
       function onResults(results) {
         const { poseLandmarks } = results;
-        console.log(poseLandmarks);
+        landmarks.left_shoulder = poseLandmarks[11];
+        landmarks.right_shoulder = poseLandmarks[12];
+        landmarks.left_hip = poseLandmarks[23];
+        landmarks.right_hip = poseLandmarks[24];
+        landmarks.left_ankle = poseLandmarks[27];
+        landmarks.right_ankle = poseLandmarks[28];
+        console.log(landmarks);
 
         if (!results.poseLandmarks) {
           grid.updateLandmarks([]);
