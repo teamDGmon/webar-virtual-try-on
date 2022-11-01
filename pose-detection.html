@@ -33,14 +33,18 @@
       const landmarks = {};
 
       function onResults(results) {
-        const { poseLandmarks } = results;
-        landmarks.left_shoulder = poseLandmarks[11];
-        landmarks.right_shoulder = poseLandmarks[12];
-        landmarks.left_hip = poseLandmarks[23];
-        landmarks.right_hip = poseLandmarks[24];
-        landmarks.left_ankle = poseLandmarks[27];
-        landmarks.right_ankle = poseLandmarks[28];
-        console.log(landmarks);
+        try {
+          const { poseLandmarks } = results;
+          landmarks.left_shoulder = poseLandmarks[11];
+          landmarks.right_shoulder = poseLandmarks[12];
+          landmarks.left_hip = poseLandmarks[23];
+          landmarks.right_hip = poseLandmarks[24];
+          landmarks.left_ankle = poseLandmarks[27];
+          landmarks.right_ankle = poseLandmarks[28];
+          console.log(landmarks);
+        } catch (e) {
+          console.error(e);
+        }
 
         if (!results.poseLandmarks) {
           grid.updateLandmarks([]);
