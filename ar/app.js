@@ -56,47 +56,55 @@ class App {
    * Add a canvas element and initialize a WebGL context that is compatible with WebXR.
    */
   createXRCanvas() {
-    console.log('create canvas start');
-    // const script = document.createElement('script')
-    // script.src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils_3d/control_utils_3d.js";
-    // document.body.appendChild(script);
     this.canvas = document.createElement("canvas");
+    this.canvas.id = 'input';
+    this.canvas.style = 'z-index: 0;';
     document.body.appendChild(this.canvas);
     this.gl = this.canvas.getContext("webgl", {xrCompatible: true});
 
     this.xrSession.updateRenderState({
       baseLayer: new XRWebGLLayer(this.xrSession, this.gl)
     });
-    console.log('update render state', this.xrSession);
 
-    // pose detection
-    this.poseDetection = new Pose({
-      locateFile: (file) => {
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
-      },
-    });
-    this.poseDetection.setOptions({
-      modelComplexity: 1,
-      smoothLandmarks: true,
-      enableSegmentation: true,
-      smoothSegmentation: true,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5,
-    });
-    this.poseDetection.onResults((results) => {
-      try {
-        const { poseLandmarks } = results;
-        landmarks.left_shoulder = poseLandmarks[11];
-        landmarks.right_shoulder = poseLandmarks[12];
-        landmarks.left_hip = poseLandmarks[23];
-        landmarks.right_hip = poseLandmarks[24];
-        landmarks.left_ankle = poseLandmarks[27];
-        landmarks.right_ankle = poseLandmarks[28];
-        console.log(landmarks);
-      } catch (e) {
-        console.error(e);
-      }
-    });
+    // // pose detection
+    // this.poseDetection = new Pose({
+    //   locateFile: (file) => {
+    //     return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
+    //   },
+    // });
+    // this.poseDetection.setOptions({
+    //   modelComplexity: 1,
+    //   smoothLandmarks: true,
+    //   enableSegmentation: true,
+    //   smoothSegmentation: true,
+    //   minDetectionConfidence: 0.5,
+    //   minTrackingConfidence: 0.5,
+    // });
+    // this.poseDetection.onResults((results) => {
+    //   try {
+    //     const { poseLandmarks } = results;
+    //     landmarks.left_shoulder = poseLandmarks[11];
+    //     landmarks.right_shoulder = poseLandmarks[12];
+    //     landmarks.left_hip = poseLandmarks[23];
+    //     landmarks.right_hip = poseLandmarks[24];
+    //     landmarks.left_ankle = poseLandmarks[27];
+    //     landmarks.right_ankle = poseLandmarks[28];
+    //     console.log(landmarks);
+    //   } catch (e) {
+    //     console.error(e);
+    //   }
+    // });
+    // console.log(this.poseDetection);
+
+    // pose estimation
+    (async () => {
+      this.net = await posenet.load();
+    })()
+    this.canvas2 = document.createElement('canvas');
+    this.canvas2.width = 720;
+    this.canvas2.height = 1480;
+    this.canvas2.style = "width: 720px; height: 1480px; z-index: 999; position: absolute; top: 0px; left: 0px;";
+    document.body.appendChild(this.canvas2);
   }
 
   /**
@@ -184,10 +192,25 @@ class App {
       // Render the scene with THREE.WebGLRenderer.
       this.renderer.render(this.scene, this.camera);
 
-      // pose detection
-      (async () => {
-        await this.poseDetection.send({image: this.canvas});
-      })();
+      // // pose detection
+      // (async () => {
+      //   await this.poseDetection.send({image: this.canvas});
+      // })();
+      const imageScaleFactor = 0.50;
+      const flipHorizontal = false;
+      const outputStride = 16;
+      const imageElement = this.canvas;
+      console.log(document.getElementsByTagName('vide'), document.getElementsByTagName('canvas'))
+      this.net.estimateSinglePose(imageElement, imageScaleFactor, flipHorizontal, outputStride).then((pose) => {
+        const {x, y} = pose.keypoints[0].position;
+        console.log(x, y);
+        // this.canvas.style.display = 'none';
+        const ctx = this.canvas2.getContext('2d');
+        ctx.fillStyle = 'red';
+        // ctx.clearRect(0, 0, 720, 1400);
+        // ctx.fillRect(x, y, 50, 50);
+        // ctx.fillRect(200, 200, 50, 50);
+      })
     }
   }
 
